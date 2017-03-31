@@ -1,4 +1,5 @@
 
+import math
 import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
@@ -31,29 +32,32 @@ class Dataset:
         self.X[remove_idx, :] = new_X
 
     def add_points_shift_mean(self, remove_idx, t):
-        self.mu = np.array([0, 2 + 0.001*t])
+        if t % 100 == 0:
+            self.mu = np.array([0, 0.5]) + self.mu
+        else:
+            self.mu = self.mu
         new_X = np.random.multivariate_normal(self.mu, self.Sigma, 1)
         self.X[remove_idx, :] = new_X
 
 data = Dataset(p=2, n=3000, phi=0.05)
 data.generate_data(standard=True)
 
-remove_pt = 55
-for i in range(3):
-    data.add_points_random(remove_pt)
-    plt.figure()
-    plt.scatter(data.X[data.Y == True, 0], data.X[data.Y == True, 1], color='r', s=1)
-    plt.scatter(data.X[data.Y == False, 0], data.X[data.Y == False, 1], color='b', s=1)
-    plt.scatter(data.X[remove_pt, 0], data.X[remove_pt, 1], color='k', s=20)
-    plt.show()
-
-data.add_points_attack(remove_pt)
-plt.figure()
-plt.scatter(data.X[data.Y == True, 0], data.X[data.Y == True, 1], color='r', s=1)
-plt.scatter(data.X[data.Y == False, 0], data.X[data.Y == False, 1], color='b', s=1)
-plt.scatter(data.X[remove_pt, 0], data.X[remove_pt, 1], color='k', s=20)
-plt.show()
-
+# remove_pt = 55
+# for i in range(3):
+#     data.add_points_random(remove_pt)
+#     plt.figure()
+#     plt.scatter(data.X[data.Y == True, 0], data.X[data.Y == True, 1], color='r', s=1)
+#     plt.scatter(data.X[data.Y == False, 0], data.X[data.Y == False, 1], color='b', s=1)
+#     plt.scatter(data.X[remove_pt, 0], data.X[remove_pt, 1], color='k', s=20)
+#     plt.show()
+#
+# data.add_points_attack(remove_pt)
+# plt.figure()
+# plt.scatter(data.X[data.Y == True, 0], data.X[data.Y == True, 1], color='r', s=1)
+# plt.scatter(data.X[data.Y == False, 0], data.X[data.Y == False, 1], color='b', s=1)
+# plt.scatter(data.X[remove_pt, 0], data.X[remove_pt, 1], color='k', s=20)
+# plt.show()
+#
 
 for i in range(5000):
     remove_pt = np.random.randint(0, data.n)

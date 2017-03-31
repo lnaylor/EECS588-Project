@@ -2,6 +2,8 @@
 
 import numpy as np
 import random
+import matplotlib.pyplot as plt
+from generate_data import Dataset
 
 class Anomaly_Detector:
     
@@ -29,7 +31,7 @@ class Anomaly_Detector:
             self.__center = self.__center + ((1.0/len(self.__data))*(point-self.__center))
 
         else:
-            print "invalid removal method"
+            print("invalid removal method")
     
 
     def classify_point(self, point):
@@ -51,19 +53,29 @@ def simple_attack(data, target, r):
 def main():
 
     method = 'random-out'
-    data = np.random.normal(size=(50, 2))
-    detector = Anomaly_Detector(method, data, 1.0)
+    # data = np.random.normal(size=(50, 2))
+    data = Dataset(p=2, n=3000, phi=0.05)
+    data.generate_data(standard=True)
+
+    detector = Anomaly_Detector(method, data.X, 2.0)
 
     center = detector.get_center()
-    print center
-    print detector.classify_point([1, 1])
+    fig = plt.figure()
+    plt.scatter(data.X[data.Y == True, 0], data.X[data.Y == True, 1], color='r', s=1)
+    plt.scatter(data.X[data.Y == False, 0], data.X[data.Y == False, 1], color='b', s=1)
+    ax = fig.add_subplot(1,1,1)
+    circ = plt.Circle(center, 2.0, fill = False)
+    ax.add_patch(circ)
+    plt.show()
+    print(center)
+    print(detector.classify_point([1, 1]))
 
     while (not detector.classify_point([1,1])):
-        
-        detector.add_point([simple_attack(data, [1, 1], 1.0)])
-        print detector.get_center()
 
-    print detector.classify_point([1,1])
+        detector.add_point([simple_attack(data, [1, 1], 1.0)])
+        print(detector.get_center())
+
+    print(detector.classify_point([1,1]))
 
 
 if __name__ == '__main__':
