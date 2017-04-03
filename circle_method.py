@@ -48,10 +48,10 @@ class Anomaly_Detector:
 
     def classify_point(self, point):
         for c in self.__grid_centers:
-            xMin = c[0] - self.__width
-            xMax = c[0] + self.__width
-            yMin = c[1] - self.__width
-            yMax = c[1] + self.__width
+            xMin = c[0] - self.__grid_width
+            xMax = c[0] + self.__grid_width
+            yMin = c[1] - self.__grid_width
+            yMax = c[1] + self.__grid_width
             if point[0] <= xMax and point[0] >= xMin and point[1] <= yMax and point[1] >= yMin:
                 return False
 
@@ -72,12 +72,15 @@ def simple_attack(data, target, r):
 
 def main():
 
-#    method = 'random-out'
+    method = 'random-out'
 #    # data = np.random.normal(size=(50, 2))
-#    data = Dataset(p=2, n=3000, phi=0.05)
-#    data.generate_data(standard=True)
+    data = Dataset(p=2, n=3000, phi=0.05)
+    data.generate_data(standard=True)
 #
-#    detector = Anomaly_Detector(method, data.X, 2.0)
+    detector = Anomaly_Detector(method, data.X, 2.0)
+    detector.set_grid_width(.5)
+    detector.add_grid_center([0,0])
+    print detector.classify_point([.25, .25])
 #
 #    center = detector.get_center()
 #    fig = plt.figure()
