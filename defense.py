@@ -18,6 +18,7 @@ class mesh:
                   self.values.append([])
                   for j in range(len(self.longi)):
                         self.values[i].append(0)
+            self.width = float(maxX - minX)/float(xNum-1)
                         
       def findNearest(self,x,y):
             xi = np.searchsorted(self.lati,x)
@@ -32,7 +33,8 @@ class mesh:
       
           div = det(xdiff, ydiff)
           if div == 0:
-             raise Exception('lines do not intersect')
+             x = None
+             y = None
       
           d = (det(*line1), det(*line2))
           x = det(d, xdiff) / div
@@ -45,7 +47,9 @@ class mesh:
             if self.mode == 'train':
                   for i in self.lines:
                         x,y = self.line_intersection(line,i)
-                        if x<np.max(self.lati) and x>np.min(self.lati) and y<np.max(self.longi) and y>np.min(self.longi):
+                        if x is None:
+                              continue
+                        else if x<np.max(self.lati) and x>np.min(self.lati) and y<np.max(self.longi) and y>np.min(self.longi):
                               xi,yi = self.findNearest(x,y)
                               self.values[xi][yi] += dist                  
                   self.lines.append(line)
@@ -53,7 +57,9 @@ class mesh:
                   self.lines = self.lines[-self.window:]
                   for i in self.lines:
                         x,y = self.line_intersection(line,i)
-                        if x<np.max(self.lati) and x>np.min(self.lati) and y<np.max(self.longi) and y>np.min(self.longi):
+                        if x is None:
+                              continue
+                        else if x<np.max(self.lati) and x>np.min(self.lati) and y<np.max(self.longi) and y>np.min(self.longi):
                               xi,yi = self.findNearest(x,y)
                               self.values[xi][yi] += dist                  
                   self.lines.append(line)
@@ -63,6 +69,23 @@ class mesh:
       def percentage(self):
             base = self.values/np.sum(self.values)
             return base
+        
+      def checkPoints(self,baseline,thresh):
+            ctrs = []
+            diff = self.percentage() - baseline
+            for i in range(len(self.lati)):
+                  for j in range(len(self.longi)):
+                        if diff[i][j] > thresh:
+                              ctrs.append((self.lati[i],self.longi[j]))
+            return ctrs,self.width
+
+
+#n = mesh(1,10,1,10,10,10)
+#baseline = n.percentage()
+#n.addLine((1,2),(2,3))
+#n.addLine((1,3),(2,2))
+#c,w = n.checkPoints(baseline,0.5)
+
                         
 minX = 1
 maxX = 10
@@ -70,23 +93,24 @@ minY = 1
 maxY = 10
 xFine = 10
 yFine = 10
+thresh = 0.5
 
-m = mesh(minX,maxX,minY,maxY,xFine)
+m = mesh(minX,maxX,minY,maxY,xFine,yFine)
+
 
 for i in training:
       #before = 
       #after = 
       m.addLine(i)
 
-baseline = m.percentage
+baseline = m.percentage()
 
 m.mode = 'test'
 for i in test:
       #before = 
       #after =       
       m.addLine(i)
-      new = m.percentage
-      diff = new - baseline
+      c,w = m.checkPoints(baseline,thresh)
       ## do something to centroid detector
       # 1) threshold and classify all in grid as anomalous
       # 2) smooth and check gradient in addition to threshold
