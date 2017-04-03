@@ -74,12 +74,16 @@ yFine = 10
 m = mesh(minX,maxX,minY,maxY,xFine)
 
 for i in training:
+      #before = 
+      #after = 
       m.addLine(i)
 
 baseline = m.percentage
 
 m.mode = 'test'
 for i in test:
+      #before = 
+      #after =       
       m.addLine(i)
       new = m.percentage
       diff = new - baseline
