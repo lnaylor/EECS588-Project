@@ -49,7 +49,7 @@ class mesh:
                         x,y = self.line_intersection(line,i)
                         if x is None:
                               continue
-                        else if x<np.max(self.lati) and x>np.min(self.lati) and y<np.max(self.longi) and y>np.min(self.longi):
+                        elif x<np.max(self.lati) and x>np.min(self.lati) and y<np.max(self.longi) and y>np.min(self.longi):
                               xi,yi = self.findNearest(x,y)
                               self.values[xi][yi] += dist                  
                   self.lines.append(line)
@@ -59,7 +59,7 @@ class mesh:
                         x,y = self.line_intersection(line,i)
                         if x is None:
                               continue
-                        else if x<np.max(self.lati) and x>np.min(self.lati) and y<np.max(self.longi) and y>np.min(self.longi):
+                        elif x<np.max(self.lati) and x>np.min(self.lati) and y<np.max(self.longi) and y>np.min(self.longi):
                               xi,yi = self.findNearest(x,y)
                               self.values[xi][yi] += dist                  
                   self.lines.append(line)
@@ -80,37 +80,40 @@ class mesh:
             return ctrs,self.width
 
 
-#n = mesh(1,10,1,10,10,10)
-#baseline = n.percentage()
-#n.addLine((1,2),(2,3))
-#n.addLine((1,3),(2,2))
-#c,w = n.checkPoints(baseline,0.5)
-
-                        
-minX = 1
-maxX = 10
-minY = 1
-maxY = 10
-xFine = 10
-yFine = 10
-thresh = 0.5
-
-m = mesh(minX,maxX,minY,maxY,xFine,yFine)
-
-
-for i in training:
-      #before = 
-      #after = 
-      m.addLine(i)
-
-baseline = m.percentage()
-
-m.mode = 'test'
-for i in test:
-      #before = 
-      #after =       
-      m.addLine(i)
-      c,w = m.checkPoints(baseline,thresh)
-      ## do something to centroid detector
-      # 1) threshold and classify all in grid as anomalous
-      # 2) smooth and check gradient in addition to threshold
+def main():
+    #n = mesh(1,10,1,10,10,10)
+    #baseline = n.percentage()
+    #n.addLine((1,2),(2,3))
+    #n.addLine((1,3),(2,2))
+    #c,w = n.checkPoints(baseline,0.5)
+    
+                            
+    minX = 1
+    maxX = 10
+    minY = 1
+    maxY = 10
+    xFine = 10
+    yFine = 10
+    thresh = 0.5
+    
+    m = mesh(minX,maxX,minY,maxY,xFine,yFine)
+    
+    
+    for i in training:
+          #before = 
+          #after = 
+          m.addLine(i)
+    
+    baseline = m.percentage()
+    
+    m.mode = 'test'
+    for i in test:
+          #before = 
+          #after =       
+          m.addLine(i)
+          c,w = m.checkPoints(baseline,thresh)
+          ## do something to centroid detector
+          # 1) threshold and classify all in grid as anomalous
+          # 2) smooth and check gradient in addition to threshold
+if __name__=='__main__':
+    main()
