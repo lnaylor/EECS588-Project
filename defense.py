@@ -88,3 +88,5 @@ for i in test:
       new = m.percentage
       diff = new - baseline
       ## do something to centroid detector
+      # 1) threshold and classify all in grid as anomalous
+      # 2) smooth and check gradient in addition to threshold
