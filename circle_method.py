@@ -7,11 +7,23 @@ from generate_data import Dataset
 
 class Anomaly_Detector:
     
-    def __init__(self, method, data, r):
+    def __init__(self, method, data, r, grid_width=0):
         self.__method = method
         self.__data = data
         self.__r = r
         self.__center = np.mean(data, axis=0)
+        self.__grid_centers = []
+        self.__grid_width = grid_width
+
+    def get_grid_width(self):
+        return self.__grid_width
+    def set_grid_width(self, w):
+        self.__grid_width = w
+
+    def add_grid_center(self, c):
+        self.__grid_centers.append(c)
+    def get_grid_centers(self):
+        return self.__grid_centers
 
     def add_point(self, point):
         if self.__method=="random-out":
@@ -35,6 +47,14 @@ class Anomaly_Detector:
     
 
     def classify_point(self, point):
+        for c in self.__grid_centers:
+            xMin = c[0] - self.__width
+            xMax = c[0] + self.__width
+            yMin = c[1] - self.__width
+            yMax = c[1] + self.__width
+            if point[0] <= xMax and point[0] >= xMin and point[1] <= yMax and point[1] >= yMin:
+                return False
+
         distance = np.linalg.norm(point - self.__center)
         if distance < self.__r:
             return True
@@ -52,30 +72,30 @@ def simple_attack(data, target, r):
 
 def main():
 
-    method = 'random-out'
-    # data = np.random.normal(size=(50, 2))
-    data = Dataset(p=2, n=3000, phi=0.05)
-    data.generate_data(standard=True)
-
-    detector = Anomaly_Detector(method, data.X, 2.0)
-
-    center = detector.get_center()
-    fig = plt.figure()
-    plt.scatter(data.X[data.Y == True, 0], data.X[data.Y == True, 1], color='r', s=1)
-    plt.scatter(data.X[data.Y == False, 0], data.X[data.Y == False, 1], color='b', s=1)
-    ax = fig.add_subplot(1,1,1)
-    circ = plt.Circle(center, 2.0, fill = False)
-    ax.add_patch(circ)
-    plt.show()
-    print(center)
-    print(detector.classify_point([1, 1]))
-
-    while (not detector.classify_point([1,1])):
-
-        detector.add_point([simple_attack(data, [1, 1], 1.0)])
-        print(detector.get_center())
-
-    print(detector.classify_point([1,1]))
+#    method = 'random-out'
+#    # data = np.random.normal(size=(50, 2))
+#    data = Dataset(p=2, n=3000, phi=0.05)
+#    data.generate_data(standard=True)
+#
+#    detector = Anomaly_Detector(method, data.X, 2.0)
+#
+#    center = detector.get_center()
+#    fig = plt.figure()
+#    plt.scatter(data.X[data.Y == True, 0], data.X[data.Y == True, 1], color='r', s=1)
+#    plt.scatter(data.X[data.Y == False, 0], data.X[data.Y == False, 1], color='b', s=1)
+#    ax = fig.add_subplot(1,1,1)
+#    circ = plt.Circle(center, 2.0, fill = False)
+#    ax.add_patch(circ)
+#    plt.show()
+#    print(center)
+#    print(detector.classify_point([1, 1]))
+#
+#    while (not detector.classify_point([1,1])):
+#
+#        detector.add_point([simple_attack(data, [1, 1], 1.0)])
+#        print(detector.get_center())
+#
+#    print(detector.classify_point([1,1]))
 
 
 if __name__ == '__main__':
