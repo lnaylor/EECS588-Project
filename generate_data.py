@@ -3,7 +3,7 @@ import math
 import numpy as np
 import scipy.stats as stats
 import matplotlib.pyplot as plt
-
+from bullshit import multivariate_t
 
 class Dataset:
     def __init__(self, p, n, phi):
@@ -11,15 +11,19 @@ class Dataset:
         self.n = n
         self.phi = phi
 
-    def generate_data(self, standard):
+    def generate_data(self, standard, df=None):
         self.mu = np.zeros(self.p)
         if standard == True:
             self.Sigma = np.diag(np.ones(self.p))
         else:
             Q = np.random.random((self.p, self.p))
             self.Sigma = np.dot(np.dot(Q.T, np.diag(abs(np.random.normal(0, 1, self.p)))), Q)
-        self.X = np.random.multivariate_normal(self.mu, self.Sigma, self.n)
-        fX = stats.multivariate_normal.pdf(self.X, self.mu, self.Sigma)
+        if df == None:
+            self.X = np.random.multivariate_normal(self.mu, self.Sigma, self.n)
+            fX = stats.multivariate_normal.pdf(self.X, self.mu, self.Sigma)
+        else:
+            self.X = multivariate_t.rvs(self.mu, self.Sigma, df, self.n)
+            fX = multivariate_t.pdf(self.X, self.mu, self.Sigma, df)
         anomaly_threshold = np.percentile(fX, self.phi*100)
         self.Y = fX < anomaly_threshold
 
@@ -40,7 +44,7 @@ class Dataset:
         self.X[remove_idx, :] = new_X
 
 data = Dataset(p=2, n=3000, phi=0.05)
-data.generate_data(standard=True)
+data.generate_data(standard=True, df=10)
 
 # remove_pt = 55
 # for i in range(3):
@@ -59,17 +63,17 @@ data.generate_data(standard=True)
 # plt.show()
 #
 
-for i in range(5000):
-    remove_pt = np.random.randint(0, data.n)
-    data.add_points_shift_mean(remove_pt, i)
-    if (i+1) % 1000 == 0:
-        plt.figure()
-        plt.scatter(data.X[:, 0], data.X[:, 1], color='k', s=1)
-        plt.show()
+# for i in range(5000):
+#     remove_pt = np.random.randint(0, data.n)
+#     data.add_points_shift_mean(remove_pt, i)
+#     if (i+1) % 1000 == 0:
+#         plt.figure()
+#         plt.scatter(data.X[:, 0], data.X[:, 1], color='k', s=1)
+#         plt.show()
 
-# plt.figure()
-# plt.scatter(data.X[data.Y==True, 0], data.X[data.Y==True, 1], color='r', s=1)
-# plt.scatter(data.X[data.Y==False, 0], data.X[data.Y==False, 1], color='b', s=1)
-# # plt.savefig(title + '.png')
-# plt.show()
-# plt.close
+plt.figure()
+plt.scatter(data.X[data.Y==True, 0], data.X[data.Y==True, 1], color='r', s=1)
+plt.scatter(data.X[data.Y==False, 0], data.X[data.Y==False, 1], color='b', s=1)
+plt.savefig('data.png')
+plt.show()
+plt.close
