@@ -4,17 +4,39 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 from generate_data import Dataset
+from defense import mesh
 
 class Anomaly_Detector:
     
-    def __init__(self, method, data, r):
+    def __init__(self, method, data, r, window=200, grid_width=0):
         self.__method = method
-        self.__data = data
+        self.__data = np.array(data)
         self.__r = r
         self.__center = np.mean(data, axis=0)
+        self.__grid_centers = []
+        self.__grid_width = grid_width
+        self.__window = window
+
+    def get_r(self):
+        return self.__r
+    def get_data(self):
+        return self.__data
+    def get_grid_width(self):
+        return self.__grid_width
+    def set_grid_width(self, w):
+        self.__grid_width = w
+
+    def add_grid_center(self, c):
+        self.__grid_centers.append(c)
+    def get_grid_centers(self):
+        return self.__grid_centers
 
     def add_point(self, point):
-        if self.__method=="random-out":
+        if len(self.__data) < self.__window:
+            self.__data = np.append(self.__data, point, axis=0)
+            self.__center = np.mean(self.__data, axis=0)
+
+        elif self.__method=="random-out":
             random_i = random.randint(0, len(self.__data)-1)
             self.__data = np.delete(self.__data, random_i, 0)
             self.__data = np.append(self.__data, point, 0)
@@ -35,6 +57,14 @@ class Anomaly_Detector:
     
 
     def classify_point(self, point):
+        for c in self.__grid_centers:
+            xMin = c[0] - self.__grid_width
+            xMax = c[0] + self.__grid_width
+            yMin = c[1] - self.__grid_width
+            yMax = c[1] + self.__grid_width
+            if point[0] <= xMax and point[0] >= xMin and point[1] <= yMax and point[1] >= yMin:
+                return False
+
         distance = np.linalg.norm(point - self.__center)
         if distance < self.__r:
             return True
@@ -53,29 +83,75 @@ def simple_attack(data, target, r):
 def main():
 
     method = 'random-out'
-    # data = np.random.normal(size=(50, 2))
+    target = [2, 2]
+    
+#    # data = np.random.normal(size=(50, 2))
     data = Dataset(p=2, n=3000, phi=0.05)
     data.generate_data(standard=True)
+    training = data.X[:100]
+    training = np.reshape(training, (len(training), 2))
+    testing = data.X[100:]
+    testing = np.reshape(testing, (len(testing), 2))
+    (min_x, min_y) = np.min(training, axis=0)
+    (max_x, max_y) = np.max(training, axis=0)
+    min_x -= 10
+    min_y -= 10
+    max_x += 10
+    max_y += 10
+    xFine = 10
+    yFine = 10
+    thresh = 0.5
 
-    detector = Anomaly_Detector(method, data.X, 2.0)
+    m = mesh(min_x, max_x, min_y, max_y, xFine, yFine)
+    detector = Anomaly_Detector(method, training[:2], 2.0)
+    for t in training[2:]:
+        old_center = detector.get_center()
+        detector.add_point(np.reshape(t, (1, len(t))))
+        new_center = detector.get_center()
+        m.addLine(old_center, new_center)
+        print new_center
 
-    center = detector.get_center()
-    fig = plt.figure()
-    plt.scatter(data.X[data.Y == True, 0], data.X[data.Y == True, 1], color='r', s=1)
-    plt.scatter(data.X[data.Y == False, 0], data.X[data.Y == False, 1], color='b', s=1)
-    ax = fig.add_subplot(1,1,1)
-    circ = plt.Circle(center, 2.0, fill = False)
-    ax.add_patch(circ)
-    plt.show()
-    print(center)
-    print(detector.classify_point([1, 1]))
+    
+    detector.set_grid_width(m.width)
+    baseline = m.percentage()
+    m.mode= 'test'
 
-    while (not detector.classify_point([1,1])):
+    while not detector.classify_point(target):
+        old_center = detector.get_center()
+        if random.random() < .25:
+            new_point = simple_attack(detector.get_data(), target, detector.get_r())
+        else:
+            new_point = testing[-1]
+            testing = np.delete(testing, -1, 0)
 
-        detector.add_point([simple_attack(data, [1, 1], 1.0)])
-        print(detector.get_center())
+        new_point = np.reshape(new_point, (1, len(new_point)))
+        detector.add_point(new_point)
+        new_center = detector.get_center()
+        m.addLine(old_center, new_center)
+        c, w = m.checkPoints(baseline, thresh)
+        for cen in c:
+            detector.add_grid_center(c)
+        print detector.classify_point(target)
+        print detector.get_center()
 
-    print(detector.classify_point([1,1]))
+#
+#    center = detector.get_center()
+#    fig = plt.figure()
+#    plt.scatter(data.X[data.Y == True, 0], data.X[data.Y == True, 1], color='r', s=1)
+#    plt.scatter(data.X[data.Y == False, 0], data.X[data.Y == False, 1], color='b', s=1)
+#    ax = fig.add_subplot(1,1,1)
+#    circ = plt.Circle(center, 2.0, fill = False)
+#    ax.add_patch(circ)
+#    plt.show()
+#    print(center)
+#    print(detector.classify_point([1, 1]))
+#
+#    while (not detector.classify_point([1,1])):
+#
+#        detector.add_point([simple_attack(data, [1, 1], 1.0)])
+#        print(detector.get_center())
+#
+#    print(detector.classify_point([1,1]))
 
 
 if __name__ == '__main__':
