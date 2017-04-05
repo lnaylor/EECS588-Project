@@ -47,8 +47,16 @@ class Dataset:
             new_X = multivariate_t.rvs(self.mu, self.Sigma, self.df, 1)
         self.X[remove_idx, :] = new_X
 
+    def generate_new_points(self, num_pts):
+        if self.df == None:
+            new_points = np.random.multivariate_normal(self.mu, self.Sigma, num_pts)
+        else:
+            new_points = multivariate_t.rvs(self.mu, self.Sigma, self.df, num_pts)
+        return(new_points)
+
 data = Dataset(p=2, n=3000, phi=0.05)
 data.generate_data(standard=True, df=10)
+print(data.generate_new_points(10))
 
 # remove_pt = 55
 # for i in range(3):
