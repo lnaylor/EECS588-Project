@@ -1,7 +1,6 @@
 
 import math
 import numpy as np
-import scipy.stats as stats
 import matplotlib.pyplot as plt
 from bullshit import multivariate_t
 
@@ -19,6 +18,7 @@ class Dataset:
             Q = np.random.random((self.p, self.p))
             self.Sigma = np.dot(np.dot(Q.T, np.diag(abs(np.random.normal(0, 1, self.p)))), Q)
         if df == None:
+            import scipy.stats as stats
             self.X = np.random.multivariate_normal(self.mu, self.Sigma, self.n)
             fX = stats.multivariate_normal.pdf(self.X, self.mu, self.Sigma)
         else:
