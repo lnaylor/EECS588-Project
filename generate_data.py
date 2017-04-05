@@ -11,6 +11,7 @@ class Dataset:
         self.phi = phi
 
     def generate_data(self, standard, df=None):
+        self.df = df
         self.mu = np.zeros(self.p)
         if standard == True:
             self.Sigma = np.diag(np.ones(self.p))
@@ -40,7 +41,10 @@ class Dataset:
             self.mu = np.array([0, 0.5]) + self.mu
         else:
             self.mu = self.mu
-        new_X = np.random.multivariate_normal(self.mu, self.Sigma, 1)
+        if self.df == None:
+            new_X = np.random.multivariate_normal(self.mu, self.Sigma, 1)
+        else:
+            new_X = multivariate_t.rvs(self.mu, self.Sigma, self.df, 1)
         self.X[remove_idx, :] = new_X
 
 data = Dataset(p=2, n=3000, phi=0.05)
@@ -63,17 +67,17 @@ data.generate_data(standard=True, df=10)
 # plt.show()
 #
 
-# for i in range(5000):
-#     remove_pt = np.random.randint(0, data.n)
-#     data.add_points_shift_mean(remove_pt, i)
-#     if (i+1) % 1000 == 0:
-#         plt.figure()
-#         plt.scatter(data.X[:, 0], data.X[:, 1], color='k', s=1)
-#         plt.show()
+for i in range(5000):
+    remove_pt = np.random.randint(0, data.n)
+    data.add_points_shift_mean(remove_pt, i)
+    if (i+1) % 1000 == 0:
+        plt.figure()
+        plt.scatter(data.X[:, 0], data.X[:, 1], color='k', s=1)
+        plt.show()
 
-plt.figure()
-plt.scatter(data.X[data.Y==True, 0], data.X[data.Y==True, 1], color='r', s=1)
-plt.scatter(data.X[data.Y==False, 0], data.X[data.Y==False, 1], color='b', s=1)
-plt.savefig('data.png')
-plt.show()
-plt.close
+# plt.figure()
+# plt.scatter(data.X[data.Y==True, 0], data.X[data.Y==True, 1], color='r', s=1)
+# plt.scatter(data.X[data.Y==False, 0], data.X[data.Y==False, 1], color='b', s=1)
+# plt.savefig('data.png')
+# plt.show()
+# plt.close
