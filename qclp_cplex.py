@@ -35,7 +35,7 @@ def setProblemData(p, current, data, direction, r):
 
 def QCLP(data, direction, r):
     #Change data from array to list
-    list(data)
+    #list(data)
     data.tolist()
     
     #Set of potential new points and corresponding objective funciton values
