@@ -5,6 +5,7 @@ import random
 import matplotlib.pyplot as plt
 from generate_data import Dataset
 from defense import mesh
+from qclp_cplex import QCLP
 
 class Anomaly_Detector:
     
@@ -80,9 +81,16 @@ def simple_attack(data, target, r):
     new_point = center + (r*direction)/np.linalg.norm(direction)
     return new_point
 
+def greedy_optimal_attack(data, target, r):
+    center = np.mean(data, axis=0)
+    direction = target - center
+    new_point = QCLP(data, direction, r)
+    return new_point
+
 def main():
 
-    method = 'random-out'
+    #method = 'random-out'
+    method = 'nearest-out'
     target = [2, 2]
     
 #    # data = np.random.normal(size=(50, 2))
@@ -119,7 +127,10 @@ def main():
     while not detector.classify_point(target):
         old_center = detector.get_center()
         if random.random() < .25:
-            new_point = simple_attack(detector.get_data(), target, detector.get_r())
+            if method == 'random-out':
+                new_point = simple_attack(detector.get_data(), target, detector.get_r())
+            else:
+                new_point  = greedy_optimal_attack(detector.get_data(), target, detector.get_r())
         else:
             new_point = testing[-1]
             testing = np.delete(testing, -1, 0)
