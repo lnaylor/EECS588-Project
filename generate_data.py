@@ -3,7 +3,6 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from bullshit import multivariate_t
-from scipy import stats
 
 class Dataset:
     def __init__(self, p, n, phi):
@@ -59,9 +58,9 @@ class Dataset:
 
         return((new_Y, new_X))
 
-data = Dataset(p=2, n=3000, phi=0.05)
-data.generate_data(standard=True, df=10)
-print(data.generate_new_points(1))
+# data = Dataset(p=2, n=3000, phi=0.05)
+# data.generate_data(standard=True, df=10)
+# print(data.generate_new_points(1))
 
 # remove_pt = 55
 # for i in range(3):
