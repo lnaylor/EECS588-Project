@@ -3,6 +3,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 from bullshit import multivariate_t
+from scipy import stats
 
 class Dataset:
     def __init__(self, p, n, phi):
@@ -23,10 +24,10 @@ class Dataset:
             self.X = np.random.multivariate_normal(self.mu, self.Sigma, self.n)
             fX = stats.multivariate_normal.pdf(self.X, self.mu, self.Sigma)
         else:
-            self.X = multivariate_t.rvs(self.mu, self.Sigma, df, self.n)
-            fX = multivariate_t.pdf(self.X, self.mu, self.Sigma, df)
-        anomaly_threshold = np.percentile(fX, self.phi*100)
-        self.Y = fX < anomaly_threshold
+            self.X = multivariate_t.rvs(self.mu, self.Sigma, self.df, self.n)
+            fX = multivariate_t.pdf(self.X, self.mu, self.Sigma, self.df)
+        self.anomaly_threshold = np.percentile(fX, self.phi*100)
+        self.Y = fX < self.anomaly_threshold
 
     def add_points_random(self, remove_idx):
         new_X = np.random.multivariate_normal(self.mu, self.Sigma, 1)
@@ -49,14 +50,18 @@ class Dataset:
 
     def generate_new_points(self, num_pts):
         if self.df == None:
-            new_points = np.random.multivariate_normal(self.mu, self.Sigma, num_pts)
+            new_X = np.random.multivariate_normal(self.mu, self.Sigma, num_pts)
+            fX = stats.multivariate_normal.pdf(new_X, self.mu, self.Sigma)
         else:
-            new_points = multivariate_t.rvs(self.mu, self.Sigma, self.df, num_pts)
-        return(new_points)
+            new_X = multivariate_t.rvs(self.mu, self.Sigma, self.df, num_pts)
+            fX = multivariate_t.pdf(new_X, self.mu, self.Sigma, self.df)
+        new_Y = fX < self.anomaly_threshold
 
-#data = Dataset(p=2, n=3000, phi=0.05)
-#data.generate_data(standard=True, df=10)
-#print(data.generate_new_points(10))
+        return((new_Y, new_X))
+
+data = Dataset(p=2, n=3000, phi=0.05)
+data.generate_data(standard=True, df=10)
+print(data.generate_new_points(1))
 
 # remove_pt = 55
 # for i in range(3):
