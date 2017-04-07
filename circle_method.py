@@ -132,8 +132,9 @@ def main():
             else:
                 new_point  = greedy_optimal_attack(detector.get_data(), target, detector.get_r())
         else:
-            new_point = data.generate_new_points(1)[0]
-            normal_pts.append(new_point)
+            pt = data.generate_new_points(1)
+            (true_value, new_point) = (pt[0], pt[1][0])
+            normal_pts.append((new_point, true_value))
 
         new_point = np.reshape(new_point, (1, len(new_point)))
         detector.add_point(new_point)
@@ -147,10 +148,9 @@ def main():
     normal_pts = np.array(normal_pts)
     true_positive = 0
     for n in normal_pts:
-        if detector.classify_point(n) == True:
+        if detector.classify_point(n[0]) != n[1]:
             true_positive += 1
     print 'true positive: ', float(true_positive)/float(len(normal_pts))
-    print 'false positive: ', float(false_positive)/float(len(attack_pts))
 
 #
 #    center = detector.get_center()
