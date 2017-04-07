@@ -14,7 +14,7 @@ class BetterThanFrank:
         dist_mat = euclidean_distances(self.buffer, self.buffer)
         sorted_dist_mat = dist_mat
         sorted_dist_mat.sort(axis=1)
-        avg_kNN_dist = np.mean(sorted_dist_mat[:, range(NN)], axis=1)
+        avg_kNN_dist = np.mean(sorted_dist_mat[:, range(1, NN+1)], axis=1) # first neighbor is itself
         if threshold == None:
             idx_suspect_pts = avg_kNN_dist.argsort()[-num_suspect:]  # last points with highest distances
         else:
@@ -36,4 +36,5 @@ plt.scatter(buff_data[0:75, 0], buff_data[0:75, 1], color='k', s=3)
 for i in range(len(s_pts)):
     plt.scatter(buff_data[s_pts[i], 0], buff_data[s_pts[i], 1], color='m', s=5)
 plt.show()
+plt.savefig('defense.png')
 plt.close()
