@@ -54,9 +54,9 @@ class Dataset:
             new_points = multivariate_t.rvs(self.mu, self.Sigma, self.df, num_pts)
         return(new_points)
 
-data = Dataset(p=2, n=3000, phi=0.05)
-data.generate_data(standard=True, df=10)
-print(data.generate_new_points(10))
+#data = Dataset(p=2, n=3000, phi=0.05)
+#data.generate_data(standard=True, df=10)
+#print(data.generate_new_points(10))
 
 # remove_pt = 55
 # for i in range(3):
@@ -75,13 +75,13 @@ print(data.generate_new_points(10))
 # plt.show()
 #
 
-for i in range(5000):
-    remove_pt = np.random.randint(0, data.n)
-    data.add_points_shift_mean(remove_pt, i)
-    if (i+1) % 1000 == 0:
-        plt.figure()
-        plt.scatter(data.X[:, 0], data.X[:, 1], color='k', s=1)
-        plt.show()
+#for i in range(5000):
+#    remove_pt = np.random.randint(0, data.n)
+#    data.add_points_shift_mean(remove_pt, i)
+#    if (i+1) % 1000 == 0:
+#        plt.figure()
+#        plt.scatter(data.X[:, 0], data.X[:, 1], color='k', s=1)
+#        plt.show()
 
 # plt.figure()
 # plt.scatter(data.X[data.Y==True, 0], data.X[data.Y==True, 1], color='r', s=1)

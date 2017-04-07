@@ -5,7 +5,7 @@ import random
 import matplotlib.pyplot as plt
 from generate_data import Dataset
 from defense import mesh
-from qclp_cplex import QCLP
+#from qclp_cplex import QCLP
 
 class Anomaly_Detector:
     
@@ -89,17 +89,15 @@ def greedy_optimal_attack(data, target, r):
 
 def main():
 
-    #method = 'random-out'
-    method = 'nearest-out'
+    method = 'random-out'
+#    method = 'nearest-out'
     target = [2, 2]
     
 #    # data = np.random.normal(size=(50, 2))
-    data = Dataset(p=2, n=3000, phi=0.05)
+    data = Dataset(p=2, n=1000, phi=0.05)
     data.generate_data(standard=True)
-    training = data.X[:100]
+    training = data.X
     training = np.reshape(training, (len(training), 2))
-    testing = data.X[100:]
-    testing = np.reshape(testing, (len(testing), 2))
     (min_x, min_y) = np.min(training, axis=0)
     (max_x, max_y) = np.max(training, axis=0)
     min_x -= 10
@@ -123,17 +121,19 @@ def main():
     detector.set_grid_width(m.width)
     baseline = m.percentage()
     m.mode= 'test'
-
-    while not detector.classify_point(target):
+    
+    normal_pts = []
+#    while not detector.classify_point(target):
+    for i in range(1000):
         old_center = detector.get_center()
         if random.random() < .25:
-            if method == 'random-out':
+            if method == 'random-out' or method == 'average-out':
                 new_point = simple_attack(detector.get_data(), target, detector.get_r())
             else:
                 new_point  = greedy_optimal_attack(detector.get_data(), target, detector.get_r())
         else:
-            new_point = testing[-1]
-            testing = np.delete(testing, -1, 0)
+            new_point = data.generate_new_points(1)[0]
+            normal_pts.append(new_point)
 
         new_point = np.reshape(new_point, (1, len(new_point)))
         detector.add_point(new_point)
@@ -143,7 +143,14 @@ def main():
         for cen in c:
             detector.add_grid_center(c)
         print detector.classify_point(target)
-        print detector.get_center()
+
+    normal_pts = np.array(normal_pts)
+    true_positive = 0
+    for n in normal_pts:
+        if detector.classify_point(n) == True:
+            true_positive += 1
+    print 'true positive: ', float(true_positive)/float(len(normal_pts))
+    print 'false positive: ', float(false_positive)/float(len(attack_pts))
 
 #
 #    center = detector.get_center()
