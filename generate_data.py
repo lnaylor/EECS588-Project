@@ -2,6 +2,7 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.stats as stats
 from bullshit import multivariate_t
 
 class Dataset:
