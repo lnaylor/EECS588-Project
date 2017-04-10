@@ -95,6 +95,7 @@ class Anomaly_Detector:
 
         elif self.__method=='nearest-out':
             if self.__counter > self.__time_window:
+		print self.__center
                 past_points = BetterThanFrank(self.__data[-100:])
                 buff_data = self.__data[-100:]
                 suspicious_pts = past_points.iGEM(NN=self.__NN, num_suspect=int(self.__percent*self.__time_window))
@@ -102,6 +103,7 @@ class Anomaly_Detector:
                 self.__data = np.append(self.__data[:-100], new_buff_data, axis=0)
                 self.__center = np.mean(self.__data, axis=0)
                 self.__counter = 0
+		print self.__center
             distances = np.linalg.norm(self.__data - point, axis=1)
             i = np.argmin(distances)
             self.__data = np.delete(self.__data, i, 0)
