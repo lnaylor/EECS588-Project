@@ -38,11 +38,11 @@ def setProblemData(p, current, data, direction, r):
                                 quad_expr = cplex.SparseTriple(ind1=indices, ind2=indices, val=q_quad_coeff),
                                 rhs=q_rhs, sense  = 'L')
 
-                                #Objective function
-for k in range(len(current)):
-    p.objective.set_linear(k,direction[k])
-    offset = -np.dot(np.asarray(current),direction)
-    p.objective.set_offset(offset)
+    #Objective function
+    for k in range(len(current)):
+        p.objective.set_linear(k,direction[k])
+        offset = -np.dot(np.asarray(current),direction)
+        p.objective.set_offset(offset)
 
 
 def QCLP(data, direction, r):
