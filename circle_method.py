@@ -10,7 +10,7 @@ from defense2 import BetterThanFrank
 
 class Anomaly_Detector:
     
-    def __init__(self, method, data, r, window=200, grid_width=0, time_window=100, percent=.3):
+    def __init__(self, method, data, r, window=200, grid_width=0, time_window=50, percent=.25, NN=10):
         self.__method = method
         self.__data = np.array(data)[:window]
         self.__r = r
@@ -22,6 +22,7 @@ class Anomaly_Detector:
         self.__time_window = time_window
         self.__counter = 0
         self.__percent = percent
+        self.__NN = NN
 
     def get_r(self):
         return self.__r
@@ -41,14 +42,17 @@ class Anomaly_Detector:
     def get_grid_centers(self):
         return self.__grid_centers
 
-    def add_point(self, point, attack):
+    def add_point(self, point):
         self.__counter += 1
         if len(self.__data) < self.__window:
             if self.__counter > self.__time_window:
+                print self.__center
                 past_points = BetterThanFrank(self.__data[-100:])
                 buff_data = self.__data[-100:]
-                suspicious_pts = past_points.GEM(NN=99, num_suspect=int(self.__percent*self.__time_window))
-
+                suspicious_pts = past_points.iGEM(NN=self.__NN, num_suspect=int(self.__percent*self.__time_window))
+                    
+                new_buff_data = np.array([buff_data[i] for i in range(len(buff_data)) if i not in suspicious_pts])
+                self.__data = np.append(self.__data[:-100], new_buff_data, axis=0)
                 plt.figure()
                 plt.scatter(buff_data[:, 0], buff_data[:, 1], color='b', s=3)
                 for i in range(len(suspicious_pts)):
@@ -56,17 +60,22 @@ class Anomaly_Detector:
                 plt.show()
                 plt.savefig('defense.png')
                 plt.close()
-                self.__data = np.array([self.__data[i] for i in range(len(self.__data)) if i not in suspicious_pts])
                 self.__center = np.mean(self.__data, axis=0)
+                print self.__center
+                print
                 self.__counter = 0
             self.__data = np.append(self.__data, point, axis=0)
             self.__center = np.mean(self.__data, axis=0)
 
         elif self.__method=="random-out":
             if self.__counter > self.__time_window:
+                print self.__center
                 past_points = BetterThanFrank(self.__data[-100:])
+
                 buff_data = self.__data[-100:]
-                suspicious_pts = past_points.GEM(NN=99, num_suspect=int(self.__percent*self.__time_window))
+                suspicious_pts = past_points.iGEM(NN=self.__NN, num_suspect=int(self.__percent*self.__time_window))
+                new_buff_data = np.array([buff_data[i] for i in range(len(buff_data)) if i not in suspicious_pts])
+                self.__data = np.append(self.__data[:-100], new_buff_data, axis=0)
                 plt.figure()
                 plt.scatter(buff_data[:, 0], buff_data[:, 1], color='b', s=3)
                 for i in range(len(suspicious_pts)):
@@ -74,8 +83,10 @@ class Anomaly_Detector:
                 plt.show()
                 plt.savefig('defense.png')
                 plt.close()
-                self.__data = np.array([self.__data[i] for i in range(len(self.__data)) if i not in suspicious_pts])
+
                 self.__center = np.mean(self.__data, axis=0)
+                print self.__center
+                print
                 self.__counter = 0
             random_i = random.randint(0, len(self.__data)-1)
             self.__data = np.delete(self.__data, random_i, 0)
@@ -85,8 +96,10 @@ class Anomaly_Detector:
         elif self.__method=='nearest-out':
             if self.__counter > self.__time_window:
                 past_points = BetterThanFrank(self.__data[-100:])
-                suspicious_pts = past_points.GEM(num_suspect=int(self.__percent*self.__time_window))
-                self.__data = np.array([self.__data[i] for i in range(len(self.__data)) if i not in suspicious_pts])
+                buff_data = self.__data[-100:]
+                suspicious_pts = past_points.iGEM(NN=self.__NN, num_suspect=int(self.__percent*self.__time_window))
+                new_buff_data = np.array([buff_data[i] for i in range(len(buff_data)) if i not in suspicious_pts])
+                self.__data = np.append(self.__data[:-100], new_buff_data, axis=0)
                 self.__center = np.mean(self.__data, axis=0)
                 self.__counter = 0
             distances = np.linalg.norm(self.__data - point, axis=1)
@@ -98,7 +111,7 @@ class Anomaly_Detector:
         elif self.__method=='average-out':
 #            if self.__counter > self.__time_window:
 #                past_points = BetterThanFrank(self.__data[-100:])
-#                suspicious_pts = past_points.GEM(num_suspect=int(self.__percent*self.__time_window))
+#                suspicious_pts = past_points.iGEM(NN=self.__NN, num_suspect=int(self.__percent*self.__time_window))
 #                self.__data = np.array([self.__data[i] for i in range(len(self.__data)) if i not in suspicious_pts])
 #                self.__center = np.mean(self.__data, axis=0)
 #                self.__counter = 0
@@ -141,8 +154,8 @@ def greedy_optimal_attack(data, target, r):
 
 def main():
 
-    method = 'random-out'
-#    method = 'nearest-out'
+#    method = 'random-out'
+    method = 'nearest-out'
     target = [1.7, 1.7]
     
     data = Dataset(p=2, n=1000, phi=0.05)
@@ -187,24 +200,24 @@ def main():
             if method == 'random-out' or method == 'average-out':
                 new_point = simple_attack(detector.get_data(), target, detector.get_r())
                 new_point = np.reshape(new_point, (1, len(new_point)))
-                detector.add_point(new_point, True)
+                detector.add_point(new_point)
             else:
                 new_point  = greedy_optimal_attack(detector.get_data(), target, detector.get_r())
-                detector.add_point(new_point, True)
+                detector.add_point(new_point)
         else:
             pt = data.generate_new_points(1)
             (true_value, new_point) = (pt[0], pt[1][0])
             normal_pts.append((new_point, true_value))
 
             new_point = np.reshape(new_point, (1, len(new_point)))
-            detector.add_point(new_point, False)
+            detector.add_point(new_point)
 #        new_center = detector.get_center()
 #        m.addLine(old_center, new_center)
 #        c, w = m.checkPoints(baseline, thresh)
 #        for cen in c:
 #            print cen
 #            detector.add_grid_center(cen)
-        print detector.get_center()
+#        print detector.get_center()
         if detector.classify_point(target):
             print detector.classify_point(target)
             break
