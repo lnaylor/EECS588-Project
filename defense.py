@@ -42,7 +42,7 @@ class mesh:
             x = det(d, xdiff) / div
             y = det(d, ydiff) / div
             return x, y
-      def line_seg_intersection(self,line,rec):
+      def line_rec_intersection(self,line,rec):
             xrec = np.sort(rec,axis=0)
             xInit = xrec[0][0] - 1.0
             xEnd = xrec[-1][0] + 1.0

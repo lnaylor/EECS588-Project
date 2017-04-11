@@ -13,8 +13,8 @@ def main():
     method = 'random-out'
 #    method = 'nearest-out'
 
-#    defense_method = 'grid'
-    defense_method = 'NN'
+    defense_method = 'grid'
+#    defense_method = 'NN'
 #    defense_method = 'none'
     
     radius = 2
@@ -41,10 +41,8 @@ def main():
         yFine = 100
         thresh = 0.01
 
-        m = mesh(min_x, max_x, min_y, max_y, xFine, yFine)
+        m = mesh(min_x, max_x, min_y, max_y, xFine, yFine, radius=.05)
         
-        if method == 'nearest-out':
-            from qclp_cplex import QCLP
 
         if defense_method == 'grid':
             detector = Anomaly_Detector(method, data.X[:1], radius, data_window, NNdefense_on = False)
@@ -56,6 +54,7 @@ def main():
                 
             detector.set_grid_width(m.width)
             baseline = m.percentage()
+            m.center = detector.get_center()
             m.mode = 'test'
         
         if defense_method == 'NN':
@@ -89,6 +88,26 @@ def main():
                 c, w = m.checkPoints(baseline, thresh)
                 for cen in c:
                     detector.add_grid_center(cen)
+
+                rec = detector.get_grid_centers()
+                w = detector.get_grid_width()
+                w = w/2
+                line = [old_center, new_center]
+                recs = []
+                for r in rec:
+                    x1 = r[0]-w
+                    x2 = r[0]+w
+                    y1 = r[1]-w
+                    y2 = r[1]+w
+                    recs.append([[x1,y1],[x2,y2]])
+
+                should_delete = False
+                for r in recs:
+                    if m.line_rec_intersection(line, r):
+                        should_delete = True
+
+                if should_delete:
+                    detector.remove_point()
 
             if detector.classify_point(target):
                 print 'Target achieved'

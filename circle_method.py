@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from generate_data import Dataset
 from defense import mesh
 from defense2 import BetterThanFrank
-from qclp_cplex import QCLP
+#from qclp_cplex import QCLP
 
 class Anomaly_Detector:
     
@@ -43,6 +43,10 @@ class Anomaly_Detector:
         self.__grid_centers.append(c)
     def get_grid_centers(self):
         return self.__grid_centers
+
+    def remove_point(self):
+        self.__data = np.delete(self.__data, -1, 0)
+        self.__center = np.mean(self.__data, axis=0)
 
     def add_point(self, point):
         if self.__NNdefense:
