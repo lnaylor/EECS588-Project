@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from generate_data import Dataset
 from defense import mesh
 from defense2 import BetterThanFrank
+from qclp_cplex import QCLP
 
 class Anomaly_Detector:
     
@@ -121,7 +122,7 @@ def greedy_optimal_attack(data, target, r):
     center = np.mean(data, axis=0)
     direction = target - center
     new_point = QCLP(data, direction, r)
-    return [new_point]
+    return new_point
 
 def main():
 
