@@ -10,9 +10,10 @@ from defense2 import BetterThanFrank
 
 class Anomaly_Detector:
     
-    def __init__(self, method, data, r, window=200, grid_width=0, time_window=50, percent=.25, NN=10, NNdefense_on = True):
+    def __init__(self, method, data, labels, r, window=200, grid_width=0, time_window=50, percent=.25, NN=10, NNdefense_on = True):
         self.__method = method
         self.__data = np.array(data)[:window]
+        self.__labels = np.array(labels)[:window]
         self.__r = r
         self.__center = np.mean(data, axis=0)
         self.__saved_center = np.mean(data, axis=0)
@@ -32,6 +33,8 @@ class Anomaly_Detector:
         return self.__r
     def get_data(self):
         return self.__data
+    def get_labels(self):
+        return self.__labels
     def get_grid_width(self):
         return self.__grid_width
     def set_grid_width(self, w):
@@ -46,17 +49,22 @@ class Anomaly_Detector:
 
     def remove_point(self):
         self.__data = np.delete(self.__data, -1, 0)
+        self.__labels = np.delete(self.__labels, -1, 0)
         self.__center = np.mean(self.__data, axis=0)
 
-    def add_point(self, point):
+    def add_point(self, point, label):
         if self.__NNdefense:
             if self.__counter >= self.__time_window:
                 print self.__center
                 buff_data = self.__data[-100:]
+                buff_labels = self.__labels[-100:]
                 past_points = BetterThanFrank(buff_data)
                 suspicious_pts = past_points.iGEM(NN=self.__NN, num_suspect = int(self.__percent*self.__time_window))
                 new_buff_data = np.array([buff_data[i] for i in range(len(buff_data)) if i not in suspicious_pts])
+                new_buff_labels = np.array([buff_labels[i] for i in range(len(buff_labels)) if i not in suspicious_pts])
+                
                 self.__data = np.append(self.__data[:-100], new_buff_data, axis=0)
+                self.__labels = np.append(self.__labels[:-100], new_buff_labels, axis=0)
 
 #                plt.figure()
 #                plt.scatter(buff_data[:, 0], buff_data[:, 1], color='b', s=3)
@@ -73,19 +81,24 @@ class Anomaly_Detector:
             
         if len(self.__data) < self.__window:
             self.__data = np.append(self.__data, point, axis=0)
+            self.__labels = np.append(self.__labels, np.array([label]), axis=0)
             self.__center = np.mean(self.__data, axis=0)
 
         elif self.__method=="random-out":
             random_i = random.randint(0, len(self.__data)-1)
             self.__data = np.delete(self.__data, random_i, 0)
+            self.__labels = np.delete(self.__labels, random_i, 0)
             self.__data = np.append(self.__data, point, 0)
+            self.__labels = np.append(self.__labels, np.array([label]), 0)
             self.__center = np.mean(self.__data, axis=0)
 
         elif self.__method=='nearest-out':
             distances = np.linalg.norm(self.__data - point, axis=1)
             i = np.argmin(distances)
             self.__data = np.delete(self.__data, i, 0)
+            self.__labels = np.delete(self.__labels, i, 0)
             self.__data = np.append(self.__data, point, 0)
+            self.__labels = np.append(self.__labels, np.array([label]), 0)
             self.__center = np.mean(self.__data, axis=0)
         
         elif self.__method=='average-out':
