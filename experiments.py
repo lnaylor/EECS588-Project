@@ -7,8 +7,14 @@ from generate_data import Dataset
 from defense import mesh
 from circle_method import *
 
+def get_new_num():
+    get_new_num.counter += 1
+    return str(get_new_num.counter)
+get_new_num.counter = 0
 
 def main():
+
+    file_name = 'test'
     num_trials = 1    
     method = 'random-out'
 #    method = 'nearest-out'
@@ -119,10 +125,11 @@ def main():
             circ = plt.Circle(detector.get_center(), radius, fill = False)
             ax.add_patch(circ)
             
-            plt.scatter(detector.get_data()[ detector.get_labels() == True, 0], detector.get_data()[ detector.get_labels()== True, 1], color = 'r', s=1)
-            plt.scatter(detector.get_data()[detector.get_labels()== False, 0], detector.get_data()[detector.get_labels()== False, 1], color = 'k', s=1)
-            plt.scatter(detector.get_data()[detector.get_labels()== 2, 0], detector.get_data()[detector.get_labels()== 2, 1], color = 'b', s=1)
-            plt.show()
+            plt.scatter(detector.get_data()[ detector.get_labels() == True, 0], detector.get_data()[ detector.get_labels()== True, 1], color = 'r', marker = 'o', s=1)
+            plt.scatter(detector.get_data()[detector.get_labels()== False, 0], detector.get_data()[detector.get_labels()== False, 1], color = 'k', marker = '+', s=1)
+            plt.scatter(detector.get_data()[detector.get_labels()== 2, 0], detector.get_data()[detector.get_labels()== 2, 1], color = 'b', marker = '8', s=1)
+            fig.savefig(file_name+get_new_num()+'.pdf')
+#            plt.show()
 
         if detector.classify_point(target):
             print 'Target achieved'
@@ -157,19 +164,19 @@ def main():
     print 'False positive: ', false_positive
     print 'False negative: ', false_negative
     
-    X  = np.asarray(X)
-    Y = np.asarray(Y)
-    true_y = np.asarray(true_y)
-
-    fig = plt.figure()
-
-    ax = fig.add_subplot(1, 1, 1)
-    circ = plt.Circle(detector.get_center(), radius, fill = False)
-    ax.add_patch(circ)
-    
-    plt.scatter(X[ true_y == True, 0],X[ true_y == True, 1], color = 'r', s=1)
-    plt.scatter(X[true_y == False, 0], X[true_y == False, 1], color = 'k', s=1)
-    plt.show()
+#    X  = np.asarray(X)
+#    Y = np.asarray(Y)
+#    true_y = np.asarray(true_y)
+#
+#    fig = plt.figure()
+#
+#    ax = fig.add_subplot(1, 1, 1)
+#    circ = plt.Circle(detector.get_center(), radius, fill = False)
+#    ax.add_patch(circ)
+#    
+#    plt.scatter(X[ true_y == True, 0],X[ true_y == True, 1], color = 'r', s=1)
+#    plt.scatter(X[true_y == False, 0], X[true_y == False, 1], color = 'k', s=1)
+#    plt.show()
 
 if __name__ == '__main__':
     main()
