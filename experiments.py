@@ -14,19 +14,19 @@ get_new_num.counter = 0
 
 def main():
 
-    file_name = 'test'
+    file_name = 'simpleattack-random-NNdefense'
     num_trials = 1
     method = 'random-out'
 #    method = 'nearest-out'
 
 #    defense_method = 'grid'
-#    defense_method = 'NN'
-    defense_method = 'none'
+    defense_method = 'NN'
+#    defense_method = 'none'
     
     radius = 2.45
     target = [3, 1]
     attacker_percentage = .25
-    max_iterations = 1000
+    max_iterations = 10000
     plot_num = max_iterations/10
     
     data_window = 200
