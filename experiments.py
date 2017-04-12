@@ -14,19 +14,19 @@ get_new_num.counter = 0
 
 def main():
 
-    file_name = 'simpleattack-random-nodefense'
+    file_name = 'simpleattack-random-NNdefense'
     num_trials = 1    
-#    method = 'random-out'
-    method = 'nearest-out'
+    method = 'random-out'
+#    method = 'nearest-out'
 
 #    defense_method = 'grid'
-#    defense_method = 'NN'
-    defense_method = 'none'
+    defense_method = 'NN'
+#    defense_method = 'none'
     
     radius = 2.239
     target = [3, 1]
     attacker_percentage = .25
-    max_iterations = 2000
+    max_iterations = 1000000
     plot_num = max_iterations/10
     
     data_window = 200
@@ -76,7 +76,7 @@ def main():
         print iterations
         old_center = detector.get_center()
         if random.random() < attacker_percentage:
-            if method == 'random-out' or method == 'average-out':
+            if method == 'random-out' or method == 'average-out' or method == 'nearest-out':
                 new_point = simple_attack(detector.get_data(), target, detector.get_r())
             else:
                 new_point = greedy_optimal_attack(detector.get_data(), target, detector.get_r())

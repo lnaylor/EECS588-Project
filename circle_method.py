@@ -26,8 +26,6 @@ class Anomaly_Detector:
         self.__NN = NN
         self.__NNdefense = NNdefense_on
 
-        if method == 'nearest-out':
-            from qclp_cplex import QCLP
 
     def get_r(self):
         return self.__r
