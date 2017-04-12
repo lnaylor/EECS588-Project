@@ -24,9 +24,9 @@ def main():
     defense_method = 'none'
     
     radius = 2.239
-    target = [1.7, 1.7]
-    attacker_percentage = 0
-    max_iterations = 1000
+    target = [3, 1]
+    attacker_percentage = .25
+    max_iterations = 10000
     plot_num = max_iterations/10
     
     data_window = 200
@@ -119,16 +119,23 @@ def main():
         
         if (k%plot_num) == 0:
 
+#            fig = plt.figure(figsize = (10, 10))
             fig = plt.figure()
 
             ax = fig.add_subplot(1, 1, 1)
             circ = plt.Circle(detector.get_center(), radius, fill = False)
             ax.add_patch(circ)
             
-            plt.scatter(detector.get_data()[ detector.get_labels() == True, 0], detector.get_data()[ detector.get_labels()== True, 1], color = 'r', marker = 'o', s=1)
-            plt.scatter(detector.get_data()[detector.get_labels()== False, 0], detector.get_data()[detector.get_labels()== False, 1], color = 'k', marker = '+', s=1)
-            plt.scatter(detector.get_data()[detector.get_labels()== 2, 0], detector.get_data()[detector.get_labels()== 2, 1], color = 'b', marker = '8', s=1)
-            fig.savefig(file_name+get_new_num()+'.pdf')
+            plt.scatter(target[0], target[1], color = 'g', marker = 'x', s=35, label = 'target point')
+            plt.scatter(detector.get_data()[ detector.get_labels() == True, 0], detector.get_data()[ detector.get_labels()== True, 1], color = 'r', marker = 'o', s=10, label = 'anomalous points')
+            plt.scatter(detector.get_data()[detector.get_labels()== False, 0], detector.get_data()[detector.get_labels()== False, 1], color = 'k', marker = '+', s=20, label = 'nominal points')
+            if attacker_percentage > 0:
+                plt.scatter(detector.get_data()[detector.get_labels()== 2, 0], detector.get_data()[detector.get_labels()== 2, 1], color = 'b', marker = '^', s=10, label = 'attack points')
+
+            plt.axis('equal')
+#            plt.legend(loc=0)
+            fig.savefig(file_name+get_new_num()+'.png', bbox_inches='tight')
+            
 #            plt.show()
 
         if detector.classify_point(target):
@@ -164,6 +171,21 @@ def main():
     print 'False positive: ', false_positive
     print 'False negative: ', false_negative
     
+    fig = plt.figure()
+
+    ax = fig.add_subplot(1, 1, 1)
+    circ = plt.Circle(detector.get_center(), radius, fill = False)
+    ax.add_patch(circ)
+    
+    plt.scatter(target[0], target[1], color = 'g', marker = 'x', s=35, label = 'target point')
+    plt.scatter(detector.get_data()[ detector.get_labels() == True, 0], detector.get_data()[ detector.get_labels()== True, 1], color = 'r', marker = 'o', s=10, label = 'anomalous points')
+    plt.scatter(detector.get_data()[detector.get_labels()== False, 0], detector.get_data()[detector.get_labels()== False, 1], color = 'k', marker = '+', s=20, label = 'nominal points')
+    if attacker_percentage > 0:
+        plt.scatter(detector.get_data()[detector.get_labels()== 2, 0], detector.get_data()[detector.get_labels()== 2, 1], color = 'b', marker = '^', s=10, label = 'attack points')
+
+    plt.axis('equal')
+    fig.savefig(file_name+get_new_num()+'.png', bbox_inches='tight')
+
 #    X  = np.asarray(X)
 #    Y = np.asarray(Y)
 #    true_y = np.asarray(true_y)
