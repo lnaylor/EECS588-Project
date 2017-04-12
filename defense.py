@@ -5,6 +5,8 @@ Created on Mon Apr 03 02:13:59 2017
 @author: frcheng
 """
 import numpy as np
+from scipy.ndimage.filters import uniform_filter
+import matplotlib.pyplot as plt
 
 class mesh:
       def __init__(self,minX,maxX,minY,maxY,xNum,yNum,mode='train',window=200,center = None, radius=0,searchSpace=False):
@@ -65,7 +67,7 @@ class mesh:
             def F(x,y):
                   return (yEnd - yInit)*x + (xInit - xEnd)*y + (xEnd*yInit - xInit*yEnd)
             
-            check  = []
+            check = []
             check.append( F(x1,y1) )
             check.append( F(x2,y1) )
             check.append( F(x1,y2) )
@@ -94,6 +96,11 @@ class mesh:
                   self.lines.append(line)
             else:
                   self.lines = self.lines[-self.window:]
+#                  self.values = []
+#                  for i in range(len(self.lati)):
+#                      self.values.append([])
+#                      for j in range(len(self.longi)):
+#                          self.values[i].append(0)
                   for i in self.lines:
                         x,y = self.line_intersection(line,i)
                         if x is None:
@@ -104,9 +111,19 @@ class mesh:
                   self.lines.append(line)
                   if len(self.lines) > self.window:
                         del self.lines[0]
-      
+      def checkGrid(self, pt):
+          w = self.width/2
+          print w
+          print pt
+          for i in range(len(self.lati)):
+              for j in range(len(self.longi)):
+#                  print [self.lati[i],self.longi[j]]
+                  if self.lati[i] - w < pt[0] < self.lati[i] + w and self.longi[j] - w < pt[1] < self.longi[j] + w:
+                      return [i,j]
+          return False
+                  
       def percentage(self):
-            base = self.values[:]
+            base = list(self.values)
             if self.center is None:
                   maxAll = np.argmax(base)
                   x, y = maxAll/len(self.lati),maxAll % len(self.longi)
@@ -118,17 +135,63 @@ class mesh:
                         if np.linalg.norm(pt-self.center) < self.r:
                               base[i][j] = 0
             base = base/np.sum(base)
+#            plt.imshow(base, cmap='hot', interpolation='nearest')
+#            plt.show()            
             return base
         
-      def checkPoints(self,baseline,thresh):
-            ctrs = []
-            diff = self.percentage() - baseline
+        # check for maximum by calculating neighboring grid points
+      def smoothed(self):
+            baseline = uniform_filter(self.values,size = 2, mode = 'mirror')
+            diff = self.values - baseline
+            plt.imshow(diff, cmap='hot', interpolation='nearest')
+            plt.show()
             for i in range(len(self.lati)):
                   for j in range(len(self.longi)):
-                        if diff[i][j] > thresh:
-                              ctrs.append((self.lati[i],self.longi[j]))
-            return ctrs,self.width
+                        pt = np.asarray([self.lati[i],self.longi[j]])
+#                        print self.center
+#                        print self.r
+                        if np.linalg.norm(pt-self.center) < self.r:
+                              diff[i][j] = 0
+            diff = diff/np.sum(diff)
+            plt.imshow(diff, cmap='hot', interpolation='nearest')
+            plt.show()
+            return diff
+                  
+      def checkPoints(self,baseline=False,thresh=0,mode = 'smooth'):
+            ctrs = []
+            if mode == 'smooth':
+                  diff = self.smoothed() - baseline
+                  for i in range(len(self.lati)):
+                        for j in range(len(self.longi)):
+                              if diff[i][j] > thresh:
+                                    ctrs.append((self.lati[i],self.longi[j]))                  
+#                  baseline = uniform_filter(self.values,size = 2, mode = 'mirror')
+#                  diff = self.values - baseline
+#                  for i in range(len(self.lati)):
+#                        for j in range(len(self.longi)):
+#                              pt = np.asarray([self.lati[i],self.longi[j]])
+#                              if np.linalg.norm(pt-self.center) < self.r:
+#                                    diff[i][j] = 0
+#                  diff/np.sum(diff)
 
+#                  maxVal = np.argmax(self.values)
+#                  x, y = maxVal/len(self.lati),maxVal % len(self.longi)    
+#                  ctrs.append((self.lati[x],self.longi[y]))
+#                  val = np.asarray(m.values)
+#                  for i in range(len()):
+#                        x,y = i/len(self.lati),i%len(self.longi)
+#                        
+#                  for i in range(len(self.lati)):
+#                        for j in range(len(self.longi)):
+#                              indices = [[i+1]]
+#                              diff = 0
+            else:
+                  diff = self.percentage() - baseline
+                  for i in range(len(self.lati)):
+                        for j in range(len(self.longi)):
+                              if diff[i][j] > thresh:
+                                    ctrs.append((self.lati[i],self.longi[j]))
+            return ctrs,self.width
 
 def main():
     #n = mesh(1,10,1,10,10,10)
