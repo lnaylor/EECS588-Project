@@ -29,24 +29,16 @@ class Dataset:
         self.anomaly_threshold = np.percentile(fX, self.phi*100)
         self.Y = fX < self.anomaly_threshold
 
-    def add_points_random(self, remove_idx):
-        new_X = np.random.multivariate_normal(self.mu, self.Sigma, 1)
-        self.X[remove_idx, :] = new_X
-
-    def add_points_attack(self, remove_idx):
-        new_X = np.array([4, 4])
-        self.X[remove_idx, :] = new_X
-
-    def add_points_shift_mean(self, remove_idx, t):
+    def add_points_shift_mean(self, t, num_pts):
         if t % 100 == 0:
             self.mu = np.array([0, 0.5]) + self.mu
         else:
             self.mu = self.mu
         if self.df == None:
-            new_X = np.random.multivariate_normal(self.mu, self.Sigma, 1)
+            new_X = np.random.multivariate_normal(self.mu, self.Sigma, num_pts)
         else:
-            new_X = multivariate_t.rvs(self.mu, self.Sigma, self.df, 1)
-        self.X[remove_idx, :] = new_X
+            new_X = multivariate_t.rvs(self.mu, self.Sigma, self.df, num_pts)
+        return new_X
 
     def generate_new_points(self, num_pts):
         if self.df == None:
