@@ -40,6 +40,14 @@ class Dataset:
             new_X = multivariate_t.rvs(self.mu, self.Sigma, self.df, num_pts)
         return new_X
 
+    def get_label(self, X):
+        if self.df == None:
+            fX = stats.multivariate_normal.pdf(X, self.mu, self.Sigma)
+        else:
+            fX = multivariate_t.pdf(X, self.mu, self.Sigma, self.df)
+        Y = fX < self.anomaly_threshold
+        return ((Y, X))
+
     def generate_new_points(self, num_pts):
         if self.df == None:
             new_X = np.random.multivariate_normal(self.mu, self.Sigma, num_pts)
@@ -53,6 +61,7 @@ class Dataset:
 
 # data = Dataset(p=2, n=3000, phi=0.05)
 # data.generate_data(standard=True, df=10)
+# blob = data.get_label(data.X)
 # print(data.generate_new_points(1))
 
 # remove_pt = 55
