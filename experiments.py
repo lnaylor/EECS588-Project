@@ -14,10 +14,10 @@ get_new_num.counter = 0
 
 def main():
 
-    file_name = 'test'
+    file_name = 'simpleattack-random-nodefense'
     num_trials = 1    
-    method = 'random-out'
-#    method = 'nearest-out'
+#    method = 'random-out'
+    method = 'nearest-out'
 
 #    defense_method = 'grid'
 #    defense_method = 'NN'
@@ -26,7 +26,7 @@ def main():
     radius = 2.239
     target = [3, 1]
     attacker_percentage = .25
-    max_iterations = 10000
+    max_iterations = 2000
     plot_num = max_iterations/10
     
     data_window = 200
